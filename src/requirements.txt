@@ -1,0 +1,5 @@
+requests
+clickhouse_connect
+xxhash
+pandas
+psutil

@@ -1,0 +1,1248 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_CLICKHOUSE",
+      "label": "ClickHouse",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "grafana-clickhouse-datasource",
+      "pluginName": "ClickHouse"
+    },
+    {
+      "name": "VAR_TABLE",
+      "type": "constant",
+      "label": "Table",
+      "value": "sysdig_vulns",
+      "description": ""
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "panel",
+      "id": "barchart",
+      "name": "Bar chart",
+      "version": ""
+    },
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.1.5"
+    },
+    {
+      "type": "datasource",
+      "id": "grafana-clickhouse-datasource",
+      "name": "ClickHouse",
+      "version": "4.0.6"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "table",
+      "name": "Table",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "transparent",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 43,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "transparent",
+                "value": null
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Date"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time: DD MMM"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Critical Vulns"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "High Vulns"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "barRadius": 0.2,
+        "barWidth": 0.7,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "hide": false,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n    NULLIF(SUM(CASE WHEN severity = 'Critical' AND k8s_workload_type IN (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) AND k8s_namespace_name LIKE '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit}) AND report_date >= '${From}' AND report_date <= '${To}' THEN vuln_count ELSE 0 END), 0) AS \"Critical Vulns\",\n    NULLIF(SUM(CASE WHEN severity = 'High' AND k8s_workload_type IN (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) AND k8s_namespace_name LIKE '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit}) AND report_date >= '${From}' AND report_date <= '${To}' THEN vuln_count ELSE 0 END), 0) AS \"High Vulns\",\n    CAST(report_date AS TIMESTAMP) AS Date\nFROM\n    ${Table}_summary\nWHERE severity IN (${Severity}) AND report_date >= '${From}' AND report_date <= '${To}'\nGROUP BY report_date;",
+          "refId": "Critical"
+        },
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "hide": true,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n    NULLIF(SUM(CASE WHEN severity = 'Critical' AND k8s_workload_type IN (${WorkloadType}) AND ($__contains(${Cluster}, k8s_cluster_name) OR '${Cluster}' != '') AND k8s_namespace_name LIKE '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit}) AND report_date >= '${From}' AND report_date <= '${To}' THEN vuln_count ELSE 0 END), 0) AS \"Critical Vulns\",\n    NULLIF(SUM(CASE WHEN severity = 'High' AND k8s_workload_type IN (${WorkloadType}) AND ($__contains(${Cluster}, k8s_cluster_name) OR '${Cluster}' != '') AND k8s_namespace_name LIKE '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit}) AND report_date >= '${From}' AND report_date <= '${To}' THEN vuln_count ELSE 0 END), 0) AS \"High Vulns\",\n    CAST(report_date AS TIMESTAMP) AS Date\nFROM\n    ${Table}_summary\nWHERE severity IN (${Severity}) AND report_date >= '${From}' AND report_date <= '${To}'\nGROUP BY report_date;",
+          "refId": "High"
+        }
+      ],
+      "title": "Total Vulns Open Vulns by Date (Package Type Filter does not apply)",
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "description": "Note: If vulns have been seen before and are re-seen/reopened then this count won't show as a new vuln even though in the above you may seen total count of open vulns has gone up",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "purple",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 43,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Date"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "time: DD MMM"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Critical Vulns"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "High Vulns"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 12,
+      "options": {
+        "barRadius": 0.2,
+        "barWidth": 0.7,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "never",
+        "stacking": "normal",
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "hide": false,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n    COUNT(CASE WHEN severity='Critical' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' THEN 1 END) AS \"Critical Vulns\",  -- Counts rows where some_condition is true\n    COUNT(CASE WHEN severity='High' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' THEN 1 END) AS \"High Vulns\", -- Counts rows where another_condition is true\n    --COUNT(*) AS TotalCount,  -- Counts all rows in the group\n    CAST(vuln_first_seen AS TIMESTAMP) AS Date\nFROM ${Table}\nWHERE severity in (${Severity}) and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}'  -- Your overall filtering conditions\nGROUP BY Date;\n",
+          "refId": "High"
+        },
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "hide": true,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n    vulnerability_id,\n    COUNT(CASE WHEN severity='Critical' and k8s_workload_type  in (${WorkloadType}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces})  AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit}) and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' THEN 1 END) AS \"Critical Vulns\",\n    COUNT(CASE WHEN severity='High' and k8s_workload_type  in (${WorkloadType}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' THEN 1 END) AS \"High Vulns\",\n    CAST(MIN(vuln_first_seen) AS TIMESTAMP) AS Date -- Take min of vuln_first_seen to represent the date for each group\nFROM ${Table}\nWHERE severity in (${Severity}) and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}'\nGROUP BY vulnerability_id\nORDER BY Date;",
+          "refId": "Critical"
+        }
+      ],
+      "title": "New Vulns Discovered by Date (Package Type Filter does not apply)",
+      "transformations": [
+        {
+          "id": "groupingToMatrix",
+          "options": {
+            "columnField": "Date",
+            "emptyValue": "null",
+            "rowField": "vulnerability_id",
+            "valueField": "Critical Vulns"
+          }
+        }
+      ],
+      "type": "barchart"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SLA Met"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Platform"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 351
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "# Vulns"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 94
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "CVE"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 174
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Severity"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 143
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Namespace"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 549
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 17,
+        "w": 18,
+        "x": 0,
+        "y": 14
+      },
+      "id": 14,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "First Seen"
+          }
+        ]
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT count(*) as \"# Vulns\", vulnerability_id as CVE, severity as Severity, k8s_namespace_name as Namespace, formatDateTime(toDate(vuln_first_seen), '%d %b %y') AS \"First Seen\", vuln_status as \"Vuln Status\"\nFROM ${Table}\nWHERE severity IN (${Severity}) AND k8s_workload_type IN (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) AND k8s_namespace_name LIKE '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}'\nGROUP BY vulnerability_id,severity,k8s_namespace_name, vuln_first_seen, vuln_status\nORDER BY \"# Vulns\" DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "# of CVE First Seen by Namespace ",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "B # Vulns Resolved"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "A # New Vulns Discovered"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 6,
+        "x": 18,
+        "y": 14
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "background_solid",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "select count(*) as \"# New Vulns Discovered\" from ${Table} where severity in (${Severity}) and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and package_type in (${PackageType})  and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}'\n",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "hide": false,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "select count(*) as \"# Vulns Resolved\" from ${Table} where severity in (${Severity}) and k8s_workload_type in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_last_seen >= '${From}' and vuln_last_seen <= '${To}' and vuln_status='closed' \n",
+          "refId": "B"
+        }
+      ],
+      "title": "New Vulns Discovered & Total Vulns Fixed in Date Range",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SLA Met"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Platform"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 351
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 18,
+        "x": 0,
+        "y": 31
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Total Discovered"
+          }
+        ]
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n\tk8s_namespace_name as Namespace,\n    COUNT(CASE WHEN vuln_status='open' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  THEN 1 END) AS \"Currently Open Vulns\",\n    COUNT(CASE WHEN vuln_status='closed' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_last_seen >= '${From}' and vuln_last_seen <= '${To}' THEN 1 END) AS \"Closed Vulns in Timeframe\"\nFROM ${Table}\nWHERE severity in (${Severity}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces})  --and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' \nGROUP BY k8s_namespace_name\nORDER by \"Currently Open Vulns\" DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Vulns & Closed Vulns per Namespace",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "${DS_CLICKHOUSE}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "filterable": true,
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "locale"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "SLA Met"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Platform"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 351
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 19,
+        "w": 18,
+        "x": 0,
+        "y": 50
+      },
+      "id": 15,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Total Discovered"
+          }
+        ]
+      },
+      "pluginVersion": "10.1.5",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "${DS_CLICKHOUSE}"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "meta": {
+            "builderOptions": {
+              "columns": [],
+              "database": "",
+              "limit": 1000,
+              "mode": "list",
+              "queryType": "table",
+              "table": ""
+            }
+          },
+          "pluginVersion": "4.0.6",
+          "queryType": "table",
+          "rawSql": "SELECT\n\tk8s_namespace_name as Namespace, k8s_workload_name as Workload,\n    COUNT(CASE WHEN vuln_status='open' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  THEN 1 END) AS \"Currently Open Vulns\",\n    COUNT(CASE WHEN vuln_status='closed' and k8s_workload_type  in (${WorkloadType}) AND k8s_cluster_name IN (${Cluster}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces}) AND in_use IN (${InUse}) AND risk_accepted IN (${RiskAccepted}) AND public_exploit IN (${PublicExploit})  and vuln_last_seen >= '${From}' and vuln_last_seen <= '${To}' THEN 1 END) AS \"Closed Vulns in Timeframe\"\nFROM ${Table}\nWHERE severity in (${Severity}) and k8s_namespace_name like '%${Namespace}%' and k8s_namespace_name not in (${ExcludeNamespaces})  --and vuln_first_seen >= '${From}' and vuln_first_seen <= '${To}' \nGROUP BY k8s_namespace_name, k8s_workload_name\nORDER by \"Currently Open Vulns\" DESC",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Vulns & Closed Vulns per Workload",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct(k8s_workload_type) from ${Table}",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "WorkloadType",
+        "options": [],
+        "query": "select distinct(k8s_workload_type) from ${Table}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct severity from ${Table}",
+        "description": "",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "Severity",
+        "options": [],
+        "query": "select distinct severity from ${Table}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct toString(vuln_first_seen) from ${Table} order by vuln_first_seen DESC",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "From",
+        "options": [],
+        "query": "select distinct toString(vuln_first_seen) from ${Table} order by vuln_first_seen DESC",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct toString(vuln_first_seen) from ${Table} order by vuln_first_seen DESC",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "To",
+        "options": [],
+        "query": "select distinct toString(vuln_first_seen) from ${Table} order by vuln_first_seen DESC",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "hide": 2,
+        "label": "",
+        "name": "Table",
+        "query": "${VAR_TABLE}",
+        "skipUrlSync": false,
+        "type": "constant",
+        "current": {
+          "value": "${VAR_TABLE}",
+          "text": "${VAR_TABLE}",
+          "selected": false
+        },
+        "options": [
+          {
+            "value": "${VAR_TABLE}",
+            "text": "${VAR_TABLE}",
+            "selected": false
+          }
+        ]
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "",
+          "value": ""
+        },
+        "hide": 0,
+        "label": "Namespace Contains",
+        "name": "Namespace",
+        "options": [
+          {
+            "selected": false,
+            "text": "-prod",
+            "value": "-prod"
+          }
+        ],
+        "query": "",
+        "skipUrlSync": false,
+        "type": "textbox"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct package_type from ${Table}",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "PackageType",
+        "options": [],
+        "query": "select distinct package_type from ${Table}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select distinct k8s_namespace_name from ${Table}",
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "ExcludeNamespaces",
+        "options": [],
+        "query": "select distinct k8s_namespace_name from ${Table}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": [
+            "TRUE",
+            "FALSE"
+          ],
+          "value": [
+            "TRUE",
+            "FALSE"
+          ]
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "InUse",
+        "options": [
+          {
+            "selected": true,
+            "text": "TRUE",
+            "value": "TRUE"
+          },
+          {
+            "selected": true,
+            "text": "FALSE",
+            "value": "FALSE"
+          }
+        ],
+        "query": "TRUE,FALSE",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": [
+            "FALSE",
+            "TRUE"
+          ],
+          "value": [
+            "FALSE",
+            "TRUE"
+          ]
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "RiskAccepted",
+        "options": [
+          {
+            "selected": true,
+            "text": "TRUE",
+            "value": "TRUE"
+          },
+          {
+            "selected": true,
+            "text": "FALSE",
+            "value": "FALSE"
+          }
+        ],
+        "query": "TRUE,FALSE",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": [
+            "TRUE",
+            "FALSE"
+          ],
+          "value": [
+            "TRUE",
+            "FALSE"
+          ]
+        },
+        "hide": 0,
+        "includeAll": false,
+        "multi": true,
+        "name": "PublicExploit",
+        "options": [
+          {
+            "selected": true,
+            "text": "TRUE",
+            "value": "TRUE"
+          },
+          {
+            "selected": true,
+            "text": "FALSE",
+            "value": "FALSE"
+          }
+        ],
+        "query": "TRUE,FALSE",
+        "queryValue": "",
+        "skipUrlSync": false,
+        "type": "custom"
+      },
+      {
+        "current": {},
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "${DS_CLICKHOUSE}"
+        },
+        "definition": "select DISTINCT(k8s_cluster_name) from ${Table}",
+        "hide": 0,
+        "includeAll": true,
+        "multi": true,
+        "name": "Cluster",
+        "options": [],
+        "query": "select DISTINCT(k8s_cluster_name) from ${Table}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Vuln Dashboard 1.0 release",
+  "uid": "d9f5b975-7036-42a8-abd7-561bb508d2e7",
+  "version": 2,
+  "weekStart": ""
+}

@@ -1,0 +1,45 @@
+apiVersion: v1 # Main internal service for ClickHouse
+kind: Service
+metadata:
+  labels:
+    app: clickhouse
+  name: clickhouse
+  namespace: sysdig-vm-dashboard
+spec:
+  ports:
+    - name: http-connection
+      port: 8123
+      protocol: TCP
+      targetPort: 8123
+    - name: native-connection
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: clickhouse
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: v1 # Useful for testing and dbeaver connections etc
+kind: Service 
+metadata:
+  labels:
+    app: clickhouse
+  name: clickhouse-nodeport
+  namespace: sysdig-vm-dashboard
+spec:
+  ports:
+    - name: http-connection
+      nodePort: 30812
+      port: 8123
+      protocol: TCP
+      targetPort: 8123
+    - name: native-connection
+      nodePort: 30900
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+  selector:
+    app: clickhouse
+  sessionAffinity: None
+  type: NodePort

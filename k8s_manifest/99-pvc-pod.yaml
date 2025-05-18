@@ -1,0 +1,25 @@
+# Used to admin the PVC, ie copy in reports manually to be processed if needed
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pvc-pod
+spec:
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+  containers:
+  - name: pvc-pod
+    image: ghcr.io/aaronm-sysdig/sysdig-vm-dashboard:latest
+    env:
+    - name: TZ
+      value: "Australia/Sydney"
+    command: ["sleep", "infinity"] # Keeps the container running, used to admin the PVC
+    volumeMounts:
+    - name: data
+      mountPath: /sysdig_reports
+  volumes:
+  - name: data
+    persistentVolumeClaim: 
+      claimName: sysdig-vm-reports-pvc # Change this to your PVC name if you are using a different one (i.e customer specific)
+---

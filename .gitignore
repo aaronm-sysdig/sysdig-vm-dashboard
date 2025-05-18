@@ -1,0 +1,7 @@
+env_files/
+__pycache__/
+reports/
+old_code/
+src/__pycache__/
+src/.venv/
+.DS_Store
