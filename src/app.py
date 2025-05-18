@@ -6,6 +6,7 @@ import pandas as pd
 import download_sysdig_reports
 import psutil
 import logging
+from urllib.parse import urlparse
 
 if os.getenv('LOG_LEVEL') is not None:
     LOG_LEVEL = os.getenv('LOG_LEVEL')
@@ -14,6 +15,21 @@ else:
     exit(1)
 
 logging.basicConfig(level=getattr(logging, LOG_LEVEL), format='%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S', force=True,)
+
+
+def extract_port(value: str, default: str = '8123') -> str:
+    try:
+        # If it's a raw port (e.g., "8123"), return it directly
+        if value.isdigit():
+            return value
+        # Otherwise, try to parse it as a URL
+        parsed = urlparse(value)
+        if parsed.port:
+            return str(parsed.port)
+    except Exception:
+        pass
+    return default
+
 
 # Directory where the GZ CSV files are to be imported from
 if os.getenv('REPORT_DOWNLOADS') is not None:
@@ -66,8 +82,7 @@ else:
     exit(1)
 
 # Get Clickhouse port or run with default
-CLICKHOUSE_PORT = os.getenv('CLICKHOUSE_PORT',"8123")
-
+CLICKHOUSE_PORT = extract_port(os.getenv('CLICKHOUSE_PORT', "8123"))
 
 # Chunk batch size - how many rows to read from the CSV file at a time
 # The larger the number the more memory is used but the faster the import
