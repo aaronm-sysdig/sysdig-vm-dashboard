@@ -37,7 +37,7 @@ jobs:
         SECURE_API_TOKEN=${{ secrets.SECURE_API_TOKEN }} ./sysdig-cli-scanner --apiurl ${{env.SYSDIG_URL}} docker://${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.run_number }} || ${{ env.BYPASS_SCAN_FAIL }}
       
     - name: Log in to the Container registry
-      run: docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} ${{ env.REGISTRY }}
+      run: docker login -u ${{ github.actor }} -p ${{ secrets.PAT }} ${{ env.REGISTRY }}
     
     - name: Push the image
       run: |
