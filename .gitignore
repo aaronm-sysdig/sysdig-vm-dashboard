@@ -5,3 +5,4 @@ old_code/
 src/__pycache__/
 src/.venv/
 .DS_Store
+k8s_manifest_customer/*

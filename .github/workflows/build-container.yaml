@@ -19,6 +19,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      attestations: write
+      id-token: write
 
     steps:
     - name: Checkout code
@@ -40,3 +42,10 @@ jobs:
     - name: Push the image
       run: |
         docker push -a ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+    - name: Generate artifact attestation
+      uses: actions/attest-build-provenance@v2
+      with:
+        subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+        subject-digest: ${{ steps.push.outputs.digest }}
+        push-to-registry: true
